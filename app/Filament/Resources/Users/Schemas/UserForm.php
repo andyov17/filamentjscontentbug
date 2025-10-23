@@ -18,11 +18,26 @@ final class UserForm
     {
         return $schema
             ->components([
-                Toggle::make('a'),
-                TextInput::make('b')
-                    ->rule('numeric')
-                    ->label(JsContent::make("\$get('a')?'first':'second'")),
-
+                TextInput::make('name')
+                    ->maxLength(255)
+                    ->required(),
+                TextInput::make('email')
+                    ->maxLength(255)
+                    ->label(JsContent::make(<<<'JS'
+                    ($get('name') === 'a') ? 'first' : 'second'
+                    JS
+                    ))
+                    ->unique()
+                    ->email()
+                    ->required(),
+                TextInput::make('password')
+                    ->password()
+                    ->required(fn($livewire): bool => $livewire instanceof CreateUser)
+                    ->revealable(filament()->arePasswordsRevealable())
+                    ->rule(Password::default())
+                    ->autocomplete('new-password')
+                    ->dehydrated(fn($state): bool => filled($state))
+                    ->dehydrateStateUsing(fn($state): string => Hash::make($state)),
             ]);
     }
 }
